@@ -24,6 +24,7 @@ cdk.out/
 .DS_Store
 
 postgres/
+lambda_layer/
 
 # don't include model files
 *.pth 
