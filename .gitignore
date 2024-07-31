@@ -24,7 +24,6 @@ cdk.out/
 .DS_Store
 
 postgres/
-kaggle_data/
 
 # don't include model files
 *.pth 
