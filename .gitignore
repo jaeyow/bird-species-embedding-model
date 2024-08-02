@@ -24,6 +24,7 @@ cdk.out/
 .DS_Store
 
 postgres/
+kaggle_data/bird-species/
 
 # don't include model files
 *.pth 
