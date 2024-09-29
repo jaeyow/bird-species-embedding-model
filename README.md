@@ -1,5 +1,6 @@
 # bird-species-embedding-model
-Building an image embedding model using timm PyTorch library
+Building an image embedding model using timm PyTorch library.
+
 # Have now started the move to using mamba package manager
 ```bash
 # install mamba package manager
