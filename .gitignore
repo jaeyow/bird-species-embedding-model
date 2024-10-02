@@ -25,6 +25,7 @@ cdk.out/
 
 postgres/
 lambda_layer/
+bird-all/
 
 # don't include model files
 *.pth 
