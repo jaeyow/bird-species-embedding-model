@@ -1,7 +1,15 @@
 # bird-species-embedding-model
-Building an image embedding model using timm PyTorch library.
+Building an image embedding model using [timm PyTorch library](https://timm.fast.ai/).
 
-# Have now started the move to using mamba package manager
+## Notebooks
+
+- [Prepare dataset](notebooks/00-prepare-dataset.ipynb): Create a smaller subset of 50 bird species.
+
+- [Using a pre-trained model](notebooks/01-using-pretrained-model.ipynb): Use a pre-trained model to extract features from the dataset.
+
+- [Fine-tuning a model](notebooks/02-fine-tuning-a-pre-trained-model.ipynb): Fine-tune a pre-trained model on the dataset.
+
+## Here are some conda/mamba commands to get you started:
 ```bash
 # install mamba package manager
 conda install mamba -n base -c conda-forge
