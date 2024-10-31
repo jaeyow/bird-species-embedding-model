@@ -10,6 +10,7 @@ Building an image embedding model using [timm PyTorch library](https://timm.fast
 - [Fine-tuning a model](notebooks/02-fine-tuning-a-pre-trained-model.ipynb): Fine-tune a pre-trained model on the dataset.
 
 ## Here are some conda/mamba commands to get you started:
+
 ```bash
 # install mamba package manager
 conda install mamba -n base -c conda-forge
@@ -43,3 +44,4 @@ mamba env create -f bird-species-env.yml
 
 # deactivate the environment
 mamba deactivate
+```
