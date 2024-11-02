@@ -33,3 +33,5 @@ bird-all/
 .metaflow
 mlflow/
 minio_data/
+*.db
+app.log

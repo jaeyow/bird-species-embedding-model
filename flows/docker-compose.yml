@@ -29,6 +29,8 @@ services:
     build: ./mlflow_docker
     image: mlflow_server
     container_name: mlflow_server
+    volumes:
+      - ./sqlite_data:/mlflow/sqlite_data
     ports:
       - "${MLFLOW_PORT}:5000"
     networks:
@@ -38,9 +40,10 @@ services:
       - AWS_SECRET_ACCESS_KEY=${MINIO_SECRET_ACCESS_KEY}
       - MLFLOW_S3_ENDPOINT_URL=http://s3:${MINIO_PORT}
       - MLFLOW_S3_IGNORE_TLS=true
+      - MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING=${MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING}
     command: >
       mlflow server
-      --backend-store-uri sqlite:///mlflow.db
+      --backend-store-uri sqlite:///mlflow/sqlite_data/mlflow.db
       --host 0.0.0.0
       --serve-artifacts
       --artifacts-destination s3://${MLFLOW_BUCKET_NAME}
@@ -51,7 +54,7 @@ services:
       retries: 3
 
 volumes:
-  db_data:
+  sqlite_data:
   minio_data:
 
 networks:

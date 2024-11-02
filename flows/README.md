@@ -25,6 +25,9 @@ docker run --platform linux/arm64 -p 5000:5000 -v $(pwd)/mlruns:/mlflow/mlruns c
 ```bash
 python flow.py run
 python flow.py show
+
+python 01-resnet-fine-tuning-flow.py run --epochs 3
 ```
 
 docker compose --env-file .env up -d --build
+docker compose down

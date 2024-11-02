@@ -1,32 +1,18 @@
 from metaflow import FlowSpec, Parameter, step, card, current, project, environment
-
+from common import configure_logging
 import logging
-import sys
-from pathlib import Path
+import logging.config
 import os
 
-
-def configure_logging():
-    """Configure logging handlers and return a logger instance."""
-    if Path("logging.conf").exists():
-        logging.config.fileConfig("logging.conf")
-    else:
-        logging.basicConfig(
-            format="%(asctime)s [%(levelname)s] %(message)s",
-            handlers=[logging.StreamHandler(sys.stdout)],
-            level=logging.INFO,
-        )
-
-
 configure_logging()
-
+# override the default logging level for the mlflow logger with our own
+mlflow_logger = logging.getLogger("mlflow")
 
 @project(name="bird_species_embedding_model")
 class FineTuneBirdSpeciesClassifier(FlowSpec):
     """
     Fine-tune a pre-trained model on the bird species dataset.
     """
-
     TRAIN_DIR = Parameter(
         "train_dir",
         type=str,
@@ -54,6 +40,13 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
         default=32,
         help="The size of the batch per epoch.",
     )
+    
+    LEARNING_RATE = Parameter(
+        "learning_rate",
+        type=float,
+        default=0.0001,
+        help="The learning rate to  use.",
+    )    
 
     MODEL_NAME = Parameter(
         "model",
@@ -77,7 +70,7 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
         default=None,
         help="Path to a checkpoint path and file to resume training from.",
     )
-
+    
     @card
     @environment(
         vars={
@@ -93,6 +86,10 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
                 "AWS_SECRET_ACCESS_KEY",
                 "cPlissnZusAOIRGKBP8RuCV4WIoS75AzUSOIbk4U",
             ),
+            "MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING": os.getenv(
+                "MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING",
+                "true",
+            ),
         },
     )
     @step
@@ -101,8 +98,11 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
         Start the flow.
         """
         import mlflow
-
-        print(f"Training {self.MODEL_NAME} in flow {current.flow_name}")
+        
+        if os.path.exists("app.log"):
+            os.remove("app.log")
+        
+        logging.info("Training %s in flow %s", self.MODEL_NAME, current.flow_name)
 
         self.mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
 
@@ -110,20 +110,24 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
         mlflow.set_tracking_uri(self.mlflow_tracking_uri)
 
         try:
-            # experiment_id = mlflow.create_experiment(current.flow_name, artifact_location="s3://bird-spcies-embedding-model/artifacts")
             experiment = mlflow.set_experiment(experiment_name=current.flow_name)
             run = mlflow.start_run(
-                run_name=current.run_id, experiment_id=experiment.experiment_id
+                run_name=current.run_id,
+                experiment_id=experiment.experiment_id
             )
             self.mlflow_run_id = run.info.run_id
             self.experiment_id = experiment.experiment_id
             
-            print(f"Artifact URI: {run.info.artifact_uri}")
+            logging.info("Artifact URI: %s", run.info.artifact_uri)
+            
+            self.training_parameters = {}
 
         except Exception as e:
             message = f"Failed to connect to MLflow server {self.mlflow_tracking_uri}."
             raise RuntimeError(message) from e
 
+        if os.path.exists("app.log"):
+            mlflow.log_artifact("app.log")
         self.next(self.train)
 
     @card
@@ -143,12 +147,18 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
         import time
         import os
         import mlflow
+        from datetime import datetime
 
         mlflow.set_tracking_uri(self.mlflow_tracking_uri)
 
         with mlflow.start_run(
-            run_id=self.mlflow_run_id, experiment_id=self.experiment_id
+            run_id=self.mlflow_run_id,
+            experiment_id=self.experiment_id,
+            log_system_metrics=True,
         ):
+            time.sleep(15)
+            
+            logging.info(mlflow.MlflowClient().get_run(self.mlflow_run_id).data)
             mlflow.autolog(log_models=False)
 
             if not os.path.exists("mlflow/checkpoints"):
@@ -168,7 +178,7 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
             transform = create_transform(**data_config)
             train_dataset = datasets.ImageFolder(root=train_folder, transform=transform)
             test_dataset = datasets.ImageFolder(root=test_folder, transform=transform)
-
+            
             train_loader = DataLoader(
                 train_dataset,
                 batch_size=self.BATCH_SIZE,
@@ -184,23 +194,36 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
                 pin_memory=True,
             )
 
+            # Yay for Apple Silicon support! (train on Apple M series GPU)
             if torch.backends.mps.is_available():
                 device = "mps"
             else:
                 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-            print(f"Using device: {device}")
+            logging.info("Using device: %s", device)
             mlflow.log_param("device", device)
 
-            mlflow.log_param("model", self.MODEL_NAME)
-            mlflow.log_param("batch_size", self.BATCH_SIZE)
-            mlflow.log_param("epochs", self.NUMBER_OF_EPOCHS)
-            mlflow.log_param("train_dir", self.TRAIN_DIR)
-            mlflow.log_param("test_dir", self.TEST_DIR)
+            self.training_parameters = {
+                "model": self.MODEL_NAME,
+                "batch_size": self.BATCH_SIZE,
+                "epochs": self.NUMBER_OF_EPOCHS,
+                "learning_rate": self.LEARNING_RATE,
+                "train_dir": self.TRAIN_DIR,
+                "train_dir_samples": len(train_dataset),
+                "test_dir": self.TEST_DIR,
+                "test_dir_samples": len(test_dataset),
+                "num_classes": num_of_classes,
+                "checkpoint_interval": self.CHECKPOINT_INTERVAL,
+                "resume_checkpoint": self.RESUME_CHECKPOINT,
+            }
+            
+            mlflow.log_params(self.training_parameters)
+            logging.info("Training parameters: %s", self.training_parameters)
+            mlflow.log_artifact(os.path.basename(__file__))
 
             resnet_model.to(device)
             criterion = nn.CrossEntropyLoss()
-            optimizer = optim.AdamW(resnet_model.parameters(), lr=0.001)
+            optimizer = optim.AdamW(resnet_model.parameters(), lr=self.LEARNING_RATE)
 
             start_epoch = 0
             if self.RESUME_CHECKPOINT:
@@ -208,7 +231,7 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
                 resnet_model.load_state_dict(checkpoint["model_state_dict"])
                 optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
                 start_epoch = checkpoint["epoch"] + 1
-                print(f"Resuming training from epoch {start_epoch}")
+                logging.info("Resuming training from epoch %d", start_epoch)
 
             training_start = time.time()
             for epoch in range(start_epoch, self.NUMBER_OF_EPOCHS):
@@ -230,17 +253,18 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
                     running_loss += loss.item()
 
                 training_loss = running_loss / len(train_loader)
-                print(
-                    f"\nEpoch [{epoch+1}/{self.NUMBER_OF_EPOCHS}], Training Loss: {round(training_loss, 5)}"
+                logging.info(
+                    "Epoch [%d/%d], Training Loss: %.5f",
+                    epoch + 1, self.NUMBER_OF_EPOCHS, round(training_loss, 5)
                 )
                 mlflow.log_metric("training_loss", training_loss, step=epoch)
 
                 train_accuracy = 100 * (correct / total)
-                print(f"Training Accuracy: {round(train_accuracy, 5)}%")
+                logging.info("Training Accuracy: %.5f%%", train_accuracy)
                 mlflow.log_metric("training_accuracy", train_accuracy, step=epoch)
 
                 if (epoch + 1) % self.CHECKPOINT_INTERVAL == 0:
-                    checkpoint_path = f"mlflow/checkpoints/{self.MODEL_NAME}_best_model.pth"
+                    checkpoint_path = f"mlflow/checkpoints/{self.MODEL_NAME}_checkpoint.pth"
                     torch.save(
                         {
                             "epoch": epoch,
@@ -250,7 +274,7 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
                         checkpoint_path,
                     )
 
-                    print(f"Checkpoint saved at {checkpoint_path}")
+                    logging.info("Checkpoint saved at %s", checkpoint_path)
                     mlflow.log_artifact(checkpoint_path)
 
                 # Evaluate on test set
@@ -269,29 +293,43 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
                         running_loss += loss.item()
 
                 test_loss = running_loss / len(test_loader)
-                print(
-                    f"Epoch [{epoch+1}/{self.NUMBER_OF_EPOCHS}], Test Loss: {round(test_loss, 5)}"
+                logging.info(
+                    "Epoch [%d/%d], Test Loss: %.5f",
+                    epoch + 1, self.NUMBER_OF_EPOCHS, round(test_loss, 5)
                 )
                 mlflow.log_metric("test_loss", test_loss, step=epoch)
 
                 test_accuracy = 100 * correct / total
-                print(f"Test Accuracy: {round(test_accuracy, 5)}%")
+                logging.info("Test Accuracy: %.5f%%", round(test_accuracy, 5))
                 mlflow.log_metric("test_accuracy", test_accuracy, step=epoch)
 
                 epoch_end = time.time()
                 elapsed_time = epoch_end - epoch_start
 
                 mlflow.log_metric("epoch_time", elapsed_time, step=epoch)
-                print(f"Epoch ({epoch+1}/{self.NUMBER_OF_EPOCHS}) time: {elapsed_time}")
+                logging.info("Epoch (%d/%d) time: %s", epoch + 1, self.NUMBER_OF_EPOCHS, elapsed_time)
                 elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+                
+                if os.path.exists("app.log"):
+                    mlflow.log_artifact("app.log")
 
             training_end = time.time()
             elapsed_time = training_end - training_start
 
             mlflow.log_metric("total_training_time", elapsed_time)
             elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
-            print(f"Total training time: {elapsed_time}")
-
+            logging.info("Total training time: %s", elapsed_time)
+            
+            # Remove the classification head, because we just need the output of the embedding model, and not the classification head
+            resnet_model.reset_classifier(0)
+            model_path = f"{self.MODEL_NAME}_fine_tune_{num_of_classes}_classes_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.pth"
+            torch.save(resnet_model.state_dict(), model_path)
+            mlflow.log_artifact(model_path)
+            
+            logging.info("Training complete.")
+            if os.path.exists("app.log"):
+                mlflow.log_artifact("app.log")
+        
         self.next(self.end)
 
     @step
@@ -299,8 +337,17 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
         """
         End the flow.
         """
-        print("Flow completed.")
+        import mlflow
 
+        mlflow.set_tracking_uri(self.mlflow_tracking_uri)
+        with mlflow.start_run(
+            run_id=self.mlflow_run_id,
+            experiment_id=self.experiment_id,
+        ):
+            logging.info("Workflow %s completed", current.flow_name)
+
+            if os.path.exists("app.log"):
+                mlflow.log_artifact("app.log")
 
 if __name__ == "__main__":
     FineTuneBirdSpeciesClassifier()
