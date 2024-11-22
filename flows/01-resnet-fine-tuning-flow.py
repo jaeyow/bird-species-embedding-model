@@ -30,7 +30,7 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
     NUMBER_OF_EPOCHS = Parameter(
         "epochs",
         type=int,
-        default=5,
+        default=15,
         help="The number of epochs to train the model from.",
     )
 
@@ -44,16 +44,32 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
     LEARNING_RATE = Parameter(
         "learning_rate",
         type=float,
-        default=0.0001,
+        default=0.00001,
         help="The learning rate to  use.",
-    )    
+    )
 
     MODEL_NAME = Parameter(
         "model",
         type=str,
         default="resnet50d.ra2_in1k",
-        help="""Pick a model from:
-            - [resnet34d.ra2_in1k, resnet50d.ra2_in1k, resnet152d.ra2_in1k, mobilenetv3_small_100.lamb_in1k, mobilenetv3_large_100.ra_in1k, vit_large_patch16_224.orig_in21k]
+        help=
+        """
+            Pick a model from:
+            - [resnet34d.ra2_in1k, resnet50d.ra2_in1k, resnet152d.ra2_in1k,
+            mobilenetv3_small_100.lamb_in1k,mobilenetv3_large_100.ra_in1k,
+            vit_large_patch16_224.orig_in21k]
+        """,
+    )
+    
+    ACCURACY_THRESHOLD = Parameter(
+        "accuracy_threshold",
+        type=float,
+        default=0.7,
+        help=
+        """
+            Minimum accuracy threshold required to register the model at the end of
+            the pipeline. The model will not be registered if its accuracy is below
+            this threshold.
         """,
     )
 
@@ -332,6 +348,7 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
         
         self.next(self.end)
 
+    @card
     @step
     def end(self):
         """

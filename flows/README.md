@@ -20,6 +20,20 @@ docker run --platform linux/arm64 -p 5000:5000 -v $(pwd)/mlruns:/mlflow/mlruns c
 
 - The tracking server will then be available at http://localhost:5000
 
+
+
+## Running pre-requisites with Docker Compose
+
+```bash 
+docker compose --env-file .env up -d --build
+```
+
+## Stopping pre-requisites with Docker Compose
+
+```bash
+docker compose down
+```
+
 ## Metaflow 
 
 ```bash
@@ -28,6 +42,3 @@ python flow.py show
 
 python 01-resnet-fine-tuning-flow.py run --epochs 3
 ```
-
-docker compose --env-file .env up -d --build
-docker compose down
