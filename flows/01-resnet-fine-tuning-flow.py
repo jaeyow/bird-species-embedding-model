@@ -96,11 +96,11 @@ class FineTuneBirdSpeciesClassifier(FlowSpec):
             ),
             "AWS_ACCESS_KEY_ID": os.getenv(
                 "AWS_ACCESS_KEY_ID",
-                "sN4PjijeDW5Jv8gpjjYP",
+                "sN4PjijeDW5Jv8gpjjYP", # Generate your own MinIO access key, this instance is running in my Docker container
             ),
             "AWS_SECRET_ACCESS_KEY": os.getenv(
                 "AWS_SECRET_ACCESS_KEY",
-                "cPlissnZusAOIRGKBP8RuCV4WIoS75AzUSOIbk4U",
+                "cPlissnZusAOIRGKBP8RuCV4WIoS75AzUSOIbk4U", # Generate your own MinIO secret key, this instance is running in my Docker container
             ),
             "MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING": os.getenv(
                 "MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING",

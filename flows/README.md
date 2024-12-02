@@ -42,3 +42,7 @@ python flow.py show
 
 python 01-resnet-fine-tuning-flow.py run --epochs 3
 ```
+
+## Setting up MLFlow, and MinIO in a Docker environment
+
+https://blog.min.io/setting-up-a-development-machine-with-mlflow-and-minio/
