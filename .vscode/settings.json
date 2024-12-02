@@ -1,3 +1,17 @@
 {
-    "makefile.configureOnOpen": false
+    "makefile.configureOnOpen": false,
+    "spellright.language": [
+        "en"
+    ],
+    "spellright.documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext",
+        "python"
+    ],
+    "cSpell.words": [
+        "ANNOTATIONS",
+        "EPOCHS",
+        "train"
+    ]
 }

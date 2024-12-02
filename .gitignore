@@ -29,3 +29,9 @@ bird-all/
 
 # don't include model files
 *.pth 
+
+.metaflow
+mlflow/
+minio_data/
+*.db
+app.log
