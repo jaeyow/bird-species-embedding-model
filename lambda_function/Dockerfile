@@ -1,8 +1,12 @@
-# Use the official AWS Lambda base image for Python 3.10
-FROM public.ecr.aws/lambda/python:3.1
+FROM public.ecr.aws/lambda/python:3.10
 
-RUN pip install timm torch torchvision
+WORKDIR ${LAMBDA_TASK_ROOT}
 
-COPY bird_similarity.py ${LAMBDA_TASK_ROOT}
+# Copy requirements first for better layer caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-CMD ["bird_similarity.handler"]
+# Copy function code
+COPY bird_similarity.py .
+
+CMD [ "bird_similarity.handler" ]

@@ -1,18 +1,17 @@
 import json
 
+
 def handler(event, context):
     """
-    Lambda function to classify the document using the KNN model
+    Endpoint to classify bird species using the KNN model
     """
-        
-    message = "Hello from the bird_similarity (docker image) function"
-    print(message)
-    print(event)
+    message = "Hello from the bird_similarity FastAPI service"
+    print(f"Event: {event}")
+    print(f"Context: {context}")
     
     return {
         'statusCode': 200,
-        'headers': {
-            'Content-Type': 'text/html'
-        },
-        'body': json.dumps(event)
+        'message': message,
+        'body': json.dumps(event) if event else "No event data"
     }
+    

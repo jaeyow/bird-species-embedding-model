@@ -1,3 +1,5 @@
+## Run the lambda function locally
+
 ```bash
-docker compose -f docker-compose.yml up --build 
+make -f utility.mak run
 ```

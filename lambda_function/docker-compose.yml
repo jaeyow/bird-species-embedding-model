@@ -1,8 +1,6 @@
-
-version: '3'
 services:
-  bird_similarity_lambda:
-    image: bird_similarity_lambda:latest
+  bird_similarity_api:
+    image: bird_similarity_api:latest
     build:
       context: .
     environment:
