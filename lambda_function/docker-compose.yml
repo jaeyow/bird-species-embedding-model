@@ -1,0 +1,18 @@
+
+version: '3'
+services:
+  bird_similarity_lambda:
+    image: bird_similarity_lambda:latest
+    build:
+      context: .
+    environment:
+      DUMMY_ENV: dummy
+    networks:
+      - my_network
+    ports:
+      - "5000:8080"
+    volumes:
+      - /Users/josereyes/Dev/bird-species-embedding-model/lambda_function:/lambda_function
+networks:
+  my_network:
+    driver: bridge
