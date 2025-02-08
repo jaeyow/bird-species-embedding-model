@@ -6,7 +6,10 @@ WORKDIR ${LAMBDA_TASK_ROOT}
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-# Copy function code
+RUN mkdir -p ./model
+
+COPY ./model/*.pth ./model
 COPY bird_similarity.py .
+COPY 4.jpg .
 
 CMD [ "bird_similarity.handler" ]
