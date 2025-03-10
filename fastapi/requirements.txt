@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+pydantic
+sqlalchemy
+python-dotenv
+fastapi-security
+httpx
+pytest
+pytest-asyncio
+mypy
+black
+flake8
