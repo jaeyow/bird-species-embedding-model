@@ -37,3 +37,5 @@ minio_data/
 app.log
 
 docker-compose-aws.yml
+lancedb/
+kaggle_data/

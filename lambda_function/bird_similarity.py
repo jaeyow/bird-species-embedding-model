@@ -87,10 +87,6 @@ def get_all_embeddings(folder_path, embedding_model):
 
     return np.array(embeddings), image_paths
 
-# all_embeddings = get_all_embeddings(profiles_dir, resnet_model)
-
-# print(f"Vector embeddings for {len(all_embeddings[0])} bird species.")
-
 
 resnet_model = load_model()
 
