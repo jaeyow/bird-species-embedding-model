@@ -1,3 +1,4 @@
+from io import BytesIO
 import numpy as np
 import numpy as np
 import timm
@@ -9,7 +10,7 @@ from torchvision import transforms
 class EmbeddingGeneratorService:
     def __init__(
         self,
-        model_path: str = "./model/resnet50d.ra2_in1k_fine_tune_51_classes_2024-10-06_12-01-37.pth",
+        model_path = "/app/app/model/resnet50d.ra2_in1k_fine_tune_51_classes_2024-10-06_12-01-37.pth"
     ):
         self.resnet_model = self.load_model(model_path)
 
@@ -50,13 +51,30 @@ class EmbeddingGeneratorService:
         input_tensor = transform(image.convert("RGB")).unsqueeze(0).to(device)
         return input_tensor
 
-    def generate_embedding(self, img_path: str) -> np.ndarray:
+    def generate_embedding_from_path(self, img_path: str) -> np.ndarray:
+        """
+        Generate embeddings for the given input image path
+        """
+        device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+        
+        image = Image.open(img_path)
+        tensor = self.preprocess_image(image, device)
+        return self.__generate_embeddings(tensor, device)
+    
+    def generate_embedding_from_bytes(self, image_bytes: bytes) -> np.ndarray:
         """
         Generate embeddings for the given input image
         """
         device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-        input_tensor = self.preprocess_image(Image.open(img_path), device)
+        image = Image.open(BytesIO(image_bytes))
+        tensor = self.preprocess_image(image, device)
+        return self.__generate_embeddings(tensor, device)
+    
+    def __generate_embeddings(self, input_tensor: torch.Tensor, device) -> np.ndarray:
+        """
+        Generate embeddings for the input
+        """
         self.resnet_model.to(device)
         self.resnet_model.eval()
 

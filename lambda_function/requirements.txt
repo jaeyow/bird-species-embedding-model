@@ -1,6 +1,0 @@
-numpy<2
-Pillow
-timm==0.9.12
-torch==2.2.0
-torchvision==0.17.0
-scikit-learn

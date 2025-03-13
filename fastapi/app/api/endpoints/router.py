@@ -1,44 +1,36 @@
 import json
-from typing import List
-from fastapi import APIRouter, HTTPException
-from app.schemas.schemas import StartJobRequest, StartJobResponse, JobStatusResponse, JobResultResponse
-from app.services.service import LlmJob, LlmJobService
+from fastapi import APIRouter, File, UploadFile
+
+from app.services.generator import EmbeddingGeneratorService
+import lancedb
+
 router = APIRouter()
 
 @router.post(
-    "/jobs",
-    tags=["Jobs"],
-    summary="Start a new question generation job",
-    response_model=StartJobResponse)
-async def start_llm_job(request: StartJobRequest):
-    service = LlmJobService()
-    llm_job: LlmJob = await service.create_job(request)
-    print(f"Created job {llm_job.job_id} with parameters {request}")
-    return StartJobResponse(job_id=llm_job.job_id, status=llm_job.status)
+    "/get_similar_birds",
+    tags=["get_similar_birds"],
+    summary="Get similar birds")
+async def get_similar_birds(file: UploadFile = File(...), limit: int=6, metric: str="cosine"):
+    content = await file.read()
+    embedding_service = EmbeddingGeneratorService()
+    unknown_bird = embedding_service.generate_embedding_from_bytes(content)
+    
+    db = lancedb.connect("/app/app/lancedb")
+    table = db.open_table("embeddings")
 
-@router.get(
-    "/jobs/{job_id}/status",
-    tags=["Job status"],
-    summary="Get the status of a question generation job by job ID",
-    response_model=JobStatusResponse)
-async def llm_job_status(job_id: str):
-    service = LlmJobService()
-    job = await service.get_job(job_id)
-    print(f"Job: {job_id} status: {job.status}")
-    if job.status is None:
-        raise HTTPException(status_code=404, detail="Job not found")
-    return JobStatusResponse(job_id=job_id, status=job.status)
+    results = table \
+        .search(unknown_bird) \
+        .metric(metric) \
+        .limit(limit) \
+        .to_pandas()
+    
+    results = results[["image_path", "_distance"]]
+    results["label"] = results["image_path"].apply(lambda x: x.split("/")[-2])
+    results["similarity"] = 1 - results["_distance"]
+    results = results.drop(columns=["_distance"]) # Drop the distance column, just need the similarity
 
-@router.get(
-    "/jobs/{job_id}/results",
-    tags=["Job results"],
-    summary="Get the results of a question generation job by job ID",
-    response_model=JobResultResponse)
-async def llm_job_result(job_id: str):
-    print(f"Getting result for job {job_id}")
-    service = LlmJobService()
-    result_data = {"result": "Blah"}
-    result = await service.complete_job(job_id, result_data)
-    if result is None:
-        raise HTTPException(status_code=404, detail="Job not found or result not available")
-    return JobResultResponse(job_id=job_id, result=result)
+    results_list = results.to_dict(orient="records")
+
+    return results_list
+
+

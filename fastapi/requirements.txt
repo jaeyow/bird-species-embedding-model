@@ -10,3 +10,12 @@ pytest-asyncio
 mypy
 black
 flake8
+pillow
+python-multipart
+numpy
+timm
+torch
+torchvision
+scikit-learn
+lancedb
+pandas
