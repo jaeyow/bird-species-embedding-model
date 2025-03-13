@@ -10,3 +10,4 @@ pth
 MLflow
 datetime
 strftime
+lancedb

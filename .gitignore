@@ -35,3 +35,7 @@ mlflow/
 minio_data/
 *.db
 app.log
+
+docker-compose-aws.yml
+lancedb/
+kaggle_data/
