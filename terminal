@@ -1,0 +1,4 @@
+npm create vite@latest bird-similarity-search -- --template react
+cd bird-similarity-search
+npm install
+npm install @mui/material @emotion/react @emotion/styled axios 

@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api:
+    build: 
+      context: ./fastapi
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    volumes:
+      - ./fastapi:/app
+      - ./all_birds:/app/all_birds
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: uvicorn app.main:app --host 0.0.0.0 --port 80 --reload --log-level debug
+
+  frontend:
+    build:
+      context: ./frontend/bird-similarity-search
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/bird-similarity-search:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://api:80
+    depends_on:
+      - api
+
+networks:
+  default:
+    name: bird-search-network 
