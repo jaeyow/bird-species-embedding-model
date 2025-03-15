@@ -14,7 +14,7 @@ export function ResultsGrid({ results, loading }) {
   }
 
   return (
-    <Box sx={{ mt: 4 }}>
+    <Box sx={{ mt: 2 }}>
       <Typography variant="h5" component="h2" gutterBottom>
         Similar Birds
       </Typography>
@@ -26,7 +26,7 @@ export function ResultsGrid({ results, loading }) {
                 position: 'relative',
                 height: 0,
                 paddingTop: '100%', // 1:1 Aspect ratio
-                bgcolor: '#f5f5f5' // Light grey background
+                bgcolor: '#f5f5f5', // Light grey background
               }}>
                 <CardMedia
                   component="img"
@@ -39,12 +39,11 @@ export function ResultsGrid({ results, loading }) {
                     width: '100%',
                     height: '100%',
                     objectFit: 'contain',
-                    p: 1 // Add some padding around the image
                   }}
                 />
               </Box>
               <CardContent>
-                <Typography variant="h6" component="div">
+                <Typography variant="h8" component="div">
                   {bird.label}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">

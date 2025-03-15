@@ -1,4 +1,4 @@
-import { Container, Typography, Box } from '@mui/material';
+import { Container, Typography, Box, AppBar, Toolbar } from '@mui/material';
 import { ImageUpload } from './components/ImageUpload';
 import { ResultsGrid } from './components/ResultsGrid';
 import { useState } from 'react';
@@ -8,35 +8,35 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   return (
-    <Container maxWidth="lg">
-      <Box 
-        sx={{ 
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          minHeight: '100vh',
-          pt: 8, // Add more top padding
-          px: 2,  // Add horizontal padding
-          maxWidth: '800px',  // Set a max width for better layout
-          margin: '0 auto'    // Center the box horizontally
-        }}
+    <>
+      <AppBar position="static" color="primary" elevation={0}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Bird Similarity Search
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Container 
+        maxWidth={false}
+        disableGutters
       >
-        <Typography 
-          variant="h3" 
-          component="h1" 
-          gutterBottom 
+        <Box 
           sx={{ 
-            mb: 4,
-            fontWeight: 500,
-            textAlign: 'center'
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            minHeight: 'calc(100vh - 64px)',
+            pt: 6,
+            px: 4,
+            width: '45%',
+            margin: '0 auto'
           }}
         >
-          Bird Similarity Search
-        </Typography>
-        <ImageUpload setResults={setResults} setLoading={setLoading} />
-        <ResultsGrid results={results} loading={loading} />
-      </Box>
-    </Container>
+          <ImageUpload setResults={setResults} setLoading={setLoading} />
+          <ResultsGrid results={results} loading={loading} />
+        </Box>
+      </Container>
+    </>
   );
 }
 

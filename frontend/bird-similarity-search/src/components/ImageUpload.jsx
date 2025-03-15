@@ -1,4 +1,4 @@
-import { Button, Box, Card, CardMedia } from '@mui/material';
+import { Button, Box, Card, CardMedia, Tooltip } from '@mui/material';
 import { useRef, useState } from 'react';
 import axios from 'axios';
 
@@ -92,13 +92,15 @@ export function ImageUpload({ setResults, setLoading }) {
         onChange={handleUpload}
       />
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-        <Button
-          variant="contained"
-          onClick={() => fileInputRef.current.click()}
-          size="large"
-        >
-          Upload Bird Image
-        </Button>
+        <Tooltip title="Upload a bird image to search similar birds" arrow>
+          <Button
+            variant="contained"
+            onClick={() => fileInputRef.current.click()}
+            size="large"
+          >
+            Upload Bird Image
+          </Button>
+        </Tooltip>
         
         {previewUrl && (
           <Card sx={{ maxWidth: 300, width: '100%', mt: 2 }}>
@@ -106,7 +108,7 @@ export function ImageUpload({ setResults, setLoading }) {
               position: 'relative',
               height: 0,
               paddingTop: '100%', // 1:1 Aspect ratio
-              bgcolor: '#f5f5f5' // Light grey background
+              bgcolor: '#f5f5f5', // Light grey background
             }}>
               <CardMedia
                 component="img"
@@ -119,7 +121,6 @@ export function ImageUpload({ setResults, setLoading }) {
                   width: '100%',
                   height: '100%',
                   objectFit: 'contain',
-                  p: 1 // Add some padding around the image
                 }}
               />
             </Box>
