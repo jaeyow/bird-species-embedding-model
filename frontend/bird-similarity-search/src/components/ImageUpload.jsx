@@ -2,23 +2,6 @@ import { Button, Box, Card, CardMedia, Tooltip } from '@mui/material';
 import { useRef, useState } from 'react';
 import axios from 'axios';
 
-// Test function to verify CORS
-const testCors = async () => {
-  try {
-    const response = await fetch('http://localhost:8000/test-cors', {
-      method: 'GET',
-      mode: 'cors',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-    const data = await response.json();
-    console.log('CORS test response:', data);
-  } catch (error) {
-    console.error('CORS test failed:', error);
-  }
-};
-
 export function ImageUpload({ setResults, setLoading }) {
   const fileInputRef = useRef();
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -36,9 +19,6 @@ export function ImageUpload({ setResults, setLoading }) {
     setLoading(true);
     try {
       console.log('Making request to API...');
-      
-      // Test CORS first
-      await testCors();
       
       const response = await axios.post(
         'http://localhost:8000/get_similar_birds',
@@ -72,13 +52,6 @@ export function ImageUpload({ setResults, setLoading }) {
       alert('Error uploading image. Check console for details.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Cleanup preview URL when component unmounts
-  const cleanup = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
     }
   };
 
