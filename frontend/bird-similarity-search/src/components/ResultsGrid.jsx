@@ -21,29 +21,46 @@ export function ResultsGrid({ results, loading }) {
       <Grid container spacing={3}>
         {results.map((bird, index) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-            <Card>
+            <Card
+              sx={{
+                height: 400, // Fixed height for all cards
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                  cursor: 'pointer',
+                  boxShadow: 3
+                }
+              }}
+            >
               <Box sx={{ 
                 position: 'relative',
-                height: 0,
-                paddingTop: '100%', // 1:1 Aspect ratio
-                bgcolor: '#f5f5f5', // Light grey background
+                height: '75%', // Fixed proportion for image container
+                bgcolor: '#f5f5f5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden'
               }}>
                 <CardMedia
                   component="img"
                   image={`http://localhost:8000/birds/${bird.image_path}`}
                   alt={bird.label}
                   sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
                     width: '100%',
                     height: '100%',
-                    objectFit: 'contain',
+                    objectFit: 'cover',
                   }}
                 />
               </Box>
-              <CardContent>
-                <Typography variant="h8" component="div">
+              <CardContent sx={{ 
+                flexGrow: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center'
+              }}>
+                <Typography variant="h8" component="div" noWrap>
                   {bird.label}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">

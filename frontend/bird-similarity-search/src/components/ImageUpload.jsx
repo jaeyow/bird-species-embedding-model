@@ -83,7 +83,7 @@ export function ImageUpload({ setResults, setLoading }) {
   };
 
   return (
-    <Box sx={{ textAlign: 'center', mb: 4 }}>
+    <Box sx={{ textAlign: 'center', mb: 2 }}>
       <input
         type="file"
         accept="image/*"

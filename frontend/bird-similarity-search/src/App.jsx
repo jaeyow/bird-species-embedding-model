@@ -28,7 +28,7 @@ function App() {
             minHeight: 'calc(100vh - 64px)',
             pt: 6,
             px: 4,
-            width: '45%',
+            width: '67%',
             margin: '0 auto'
           }}
         >
