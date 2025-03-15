@@ -40,7 +40,7 @@ function App() {
             minHeight: 'calc(100vh - 64px)',
             pt: 6,
             px: 4,
-            width: '67%',
+            width: '80%',
             margin: '0 auto',
             bgcolor: 'background.default'
           }}
