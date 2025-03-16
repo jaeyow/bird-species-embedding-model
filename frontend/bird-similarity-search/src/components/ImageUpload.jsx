@@ -21,7 +21,7 @@ export function ImageUpload({ setResults, setLoading }) {
       console.log('Making request to API...');
       
       const response = await axios.post(
-        'http://localhost:8000/get_similar_birds',
+        'http://localhost:8000/api/v1/similar-birds',
         formData,
         {
           params: {
