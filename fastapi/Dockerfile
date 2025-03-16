@@ -12,6 +12,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./app ./app
 
 # Create directory for bird images
-COPY ./all_birds ./all_birds
+COPY ./all_birds ./app/all_birds
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--reload", "--log-level", "debug"]
