@@ -19,9 +19,9 @@ async def get_similar_birds(
     limit: int = Query(default=6),
     metric: str = Query(default="cosine")
 ):
-    content = await file.read()
+    contents = await file.read()
     embedding_service = EmbeddingGeneratorService()
-    unknown_bird = embedding_service.generate_embedding_from_bytes(content)
+    unknown_bird = await embedding_service.generate_embedding_from_bytes(contents)
     
     db = lancedb.connect("/app/app/lancedb")
     table = db.open_table("embeddings")
@@ -43,8 +43,5 @@ async def get_similar_birds(
 
     return results_list
 
-@router.get("/test-cors")
-async def test_cors():
-    return {"message": "CORS is working"}
 
 

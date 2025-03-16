@@ -5,6 +5,7 @@ import timm
 import torch
 from PIL import Image
 from torchvision import transforms
+import asyncio
 
 
 class EmbeddingGeneratorService:
@@ -61,12 +62,21 @@ class EmbeddingGeneratorService:
         tensor = self.preprocess_image(image, device)
         return self.__generate_embeddings(tensor, device)
     
-    def generate_embedding_from_bytes(self, image_bytes: bytes) -> np.ndarray:
+    async def generate_embedding_from_bytes(self, image_bytes: bytes) -> np.ndarray:
         """
-        Generate embeddings for the given input image
+        Generate embeddings for the given input image asynchronously
+        """
+        # Create event loop for async operations
+        loop = asyncio.get_event_loop()
+        
+        # Run the CPU/GPU intensive operations in a thread pool
+        return await loop.run_in_executor(None, self._generate_sync, image_bytes)
+    
+    def _generate_sync(self, image_bytes: bytes) -> np.ndarray:
+        """
+        Synchronous part of embedding generation
         """
         device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-
         image = Image.open(BytesIO(image_bytes))
         tensor = self.preprocess_image(image, device)
         return self.__generate_embeddings(tensor, device)
